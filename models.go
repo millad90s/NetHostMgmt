@@ -25,9 +25,23 @@ type Owner struct {
 	Servers  []Server
 }
 
+//connectdb ...
+func connectdb() (*gorm.DB, error) {
+	ConnStr := db_user + ":" + db_pass + "@tcp(" + db_addr + ")/" + db_dbname + "?charset=utf8&parseTime=True&loc=Local"
+	fmt.Printf("%s", ConnStr)
+
+	db, err := gorm.Open("mysql", ConnStr)
+	if err != nil {
+		fmt.Printf("%v", db)
+		return gorm.Open("mysql", ConnStr)
+	}
+	return gorm.Open("mysql", ConnStr)
+}
+
 //ListMyServers ...
 func (o Owner) ListMyServers() string {
-	db, err := gorm.Open("mysql", "gouser:password@tcp(192.168.1.4)/mydb?charset=utf8&parseTime=True&loc=Local")
+	db, err := connectdb()
+
 	if err != nil {
 		panic(err.Error())
 	}
@@ -50,7 +64,7 @@ func (o Owner) ListMyServers() string {
 
 //ListAllUsers ...
 func ListAllUsers() string {
-	db, err := gorm.Open("mysql", "gouser:password@tcp(192.168.1.4)/mydb?charset=utf8&parseTime=True&loc=Local")
+	db, err := connectdb()
 	if err != nil {
 		panic(err.Error())
 	}
@@ -76,7 +90,7 @@ func ListAllUsers() string {
 
 //AddServerToOwner ...
 func (s Server) AddServerToOwner(o Owner) error {
-	db, err := gorm.Open("mysql", "gouser:password@tcp(192.168.1.4)/mydb?charset=utf8&parseTime=True&loc=Local")
+	db, err := connectdb()
 	if err != nil {
 		panic(err.Error())
 	}
@@ -88,6 +102,8 @@ func (s Server) AddServerToOwner(o Owner) error {
 	// server := Server{NameID: s.NameID}
 	println("lets find an server")
 	db.Where(&s).Find(&s)
+	db.Where(&o).Find(&o)
+
 	if s.ID == 0 {
 		println("no server fonded")
 		return fmt.Errorf("no server found")
@@ -101,11 +117,12 @@ func (s Server) AddServerToOwner(o Owner) error {
 	return nil
 }
 func (s Server) addnewtodb() error {
-	db, err := gorm.Open("mysql", "gouser:password@tcp(192.168.1.4)/mydb?charset=utf8&parseTime=True&loc=Local")
+	db, err := connectdb()
+	fmt.Printf("%v", db)
 	if err != nil {
 		panic(err.Error())
 	}
-	db.AutoMigrate(&Server{})
+	// db.AutoMigrate(&Server{})
 	defer db.Close()
 	if !db.Debug().HasTable(&Server{}) {
 		db.Debug().CreateTable(&Server{})
@@ -118,7 +135,7 @@ func (s Server) addnewtodb() error {
 
 //Searchbyname ...
 func (s Server) Searchbyname() (*Server, error) {
-	db, err := gorm.Open("mysql", "gouser:password@tcp(192.168.1.4)/mydb?charset=utf8&parseTime=True&loc=Local")
+	db, err := connectdb()
 	if err != nil {
 		panic(err.Error())
 	}
@@ -132,7 +149,7 @@ func (s Server) Searchbyname() (*Server, error) {
 }
 
 func (o Owner) addnewOwner() error {
-	db, err := gorm.Open("mysql", "gouser:password@tcp(192.168.1.4)/mydb?charset=utf8&parseTime=True&loc=Local")
+	db, err := connectdb()
 	if err != nil {
 		panic(err.Error())
 	}
